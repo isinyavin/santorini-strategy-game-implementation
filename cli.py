@@ -5,24 +5,24 @@ from strategy import Player, PlayerStrategy, HumanInput, RandomStrategy
 
 class GameCLI:
     def __init__(self, type1, type2):
-        self.game = Game()
         human_strategy = HumanInput()
         random_strategy = RandomStrategy()
+        self.undo_redo_next = True
         if type1 == "human" and type2 == "human":
-            self.player1 = Player(random_strategy)
-            self.player2 = Player(random_strategy)
+            player1 = Player(human_strategy)
+            player2 = Player(human_strategy)
+        self.game = Game(player1, player2)
         
     def run(self):
         while True:
             self.winner_winner_chicken_dinner()
             self.retrieve_all_possible_moves()
             self.print_game_state()
-            self.player1.play_turn(self.game)
-            self.game.next_turn()
-            self.winner_winner_chicken_dinner()
-            self.retrieve_all_possible_moves()
-            self.print_game_state()
-            self.player2.play_turn(self.game)
+            print(len(self.game.history))
+            if self.undo_redo_next: self.prompt_undo_redo_next()
+            self.game.cur_player_object.play_turn(self.game)
+            self.game.history.append(self.game.board.save_to_momento())
+            self.game.future.clear()
             self.game.next_turn()
 
     def winner_winner_chicken_dinner(self):
@@ -35,6 +35,37 @@ class GameCLI:
                 self.run()
             else:
                 self.quit()
+
+    def prompt_undo_redo_next(self):
+        valid = False
+        while not valid:
+            choice = input("Choose 'undo', 'redo', or 'next' to proceed with the game: ").strip().lower()
+            if choice == "undo":
+                if len(self.game.history) >= 1: 
+                    self.game.undo()
+                    print("Undid the last move.")
+                    self.print_game_state() 
+                    valid = True
+                else:
+                    print("No more moves to undo.")
+            
+        
+            elif choice == "redo":
+                if self.game.future: 
+                    self.game.redo()
+                    print("Redid the last undone move.")
+                    self.print_game_state() 
+                    valid = True
+                else:
+                    print("No more moves to redo.")
+            
+            elif choice == "next":
+                print("Continuing to the next move...")
+                valid = True
+            
+            else:
+                print("Invalid input. Please enter 'undo', 'redo', or 'next'.")
+
     
     def retrieve_all_possible_moves(self):
         self.game.retrieve_moves()

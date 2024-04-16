@@ -1,6 +1,8 @@
 from square import Square
 from worker import Worker
 from iterator import SantoriniSquareIterator
+from momento import Memento
+from copy import deepcopy
 
 class Board:
     def __init__(self):
@@ -110,6 +112,12 @@ class Board:
             
         return possible_moves
                 
+    def save_to_momento(self):
+        return Memento(deepcopy(self.squares))
+
+    def restore_from_memento(self, memento):
+        self.squares = memento.get_saved_state()
+
 
     def __repr__(self):
         board_representation = "+--+--+--+--+--+\n"
