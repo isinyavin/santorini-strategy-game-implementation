@@ -111,7 +111,6 @@ class Board:
                 self.move_worker_board(worker, move_forward_and_back[valid_direction])
             print(valid_move_directions)
             
-        print(possible_moves)
         return possible_moves
                 
 

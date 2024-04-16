@@ -1,17 +1,17 @@
 from game import Game
 from board import Board
 from command import Invoker, BuildCommand, MoveWorkerCommand, SantoriniCommand 
-from strategy import Player, PlayerStrategy, HumanInput
+from strategy import Player, PlayerStrategy, HumanInput, RandomStrategy
 
 class GameCLI:
     def __init__(self, type1, type2):
         self.game = Game()
         human_strategy = HumanInput()
+        random_strategy = RandomStrategy()
         if type1 == "human" and type2 == "human":
             self.player1 = Player(human_strategy)
-            self.player2 = Player(human_strategy)
+            self.player2 = Player(random_strategy)
         
-            
     def run(self):
         while True:
             self.winner_winner_chicken_dinner()

@@ -1,4 +1,5 @@
 from command import Invoker, BuildCommand, MoveWorkerCommand, SantoriniCommand
+import random
 
 class Player:
     def __init__(self, strategy):
@@ -14,7 +15,14 @@ class PlayerStrategy:
 
 class RandomStrategy(PlayerStrategy):
     def next_move(self, game):
-        pass
+        possible_moves = game.board.enumerate_all_available_moves(game.curr_player_to_move)
+        if possible_moves:
+            move =  random.choice(possible_moves)
+        move_command = MoveWorkerCommand(game, move[0], move[1])
+        game.invoker.store_command(move_command)
+        build_command = BuildCommand(game, move[0], move[2])
+        game.invoker.store_command(build_command)
+        game.invoker.execute_commands()
 
 class HeuristicStrategy(PlayerStrategy):
     def next_move(self, game):
