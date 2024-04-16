@@ -43,28 +43,24 @@ class GameCLI:
             if choice == "undo":
                 if len(self.game.history) >= 1: 
                     self.game.undo()
-                    print("Undid the last move.")
                     self.print_game_state() 
                     valid = True
                 else:
                     print("No more moves to undo.")
             
-        
             elif choice == "redo":
                 if self.game.future: 
                     self.game.redo()
-                    print("Redid the last undone move.")
                     self.print_game_state() 
                     valid = True
                 else:
                     print("No more moves to redo.")
             
             elif choice == "next":
-                print("Continuing to the next move...")
                 valid = True
             
             else:
-                print("Invalid input. Please enter 'undo', 'redo', or 'next'.")
+                print("Invalid input")
 
     
     def retrieve_all_possible_moves(self):
