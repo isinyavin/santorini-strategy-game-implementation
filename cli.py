@@ -9,7 +9,7 @@ class GameCLI:
         human_strategy = HumanInput()
         random_strategy = RandomStrategy()
         if type1 == "human" and type2 == "human":
-            self.player1 = Player(human_strategy)
+            self.player1 = Player(random_strategy)
             self.player2 = Player(random_strategy)
         
     def run(self):

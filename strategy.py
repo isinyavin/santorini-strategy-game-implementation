@@ -16,6 +16,7 @@ class PlayerStrategy:
 class RandomStrategy(PlayerStrategy):
     def next_move(self, game):
         possible_moves = game.board.enumerate_all_available_moves(game.curr_player_to_move)
+        print(possible_moves)
         if possible_moves:
             move =  random.choice(possible_moves)
         move_command = MoveWorkerCommand(game, move[0], move[1])
@@ -23,6 +24,7 @@ class RandomStrategy(PlayerStrategy):
         build_command = BuildCommand(game, move[0], move[2])
         game.invoker.store_command(build_command)
         game.invoker.execute_commands()
+        print(f"{move[0]},{move[1]},{move[2]}")
 
 class HeuristicStrategy(PlayerStrategy):
     def next_move(self, game):

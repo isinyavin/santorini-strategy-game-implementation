@@ -17,7 +17,6 @@ class Board:
     def check_if_winning_board(self):
         iteratable_board = SantoriniSquareIterator(self.squares)
         for square in iteratable_board:
-            print(square)
             if square.level == 3 and square.worker != None:
                 return square.worker
         
@@ -91,7 +90,6 @@ class Board:
     def enumerate_all_available_moves(self, player):
         if player == "white":
             workers = ["A", "B"]
-            print(workers)
         if player =="blue":
             workers = ["Z", "Y"]
         possible_moves = []
@@ -109,7 +107,6 @@ class Board:
                         possible_moves.append([worker, valid_direction, build_direction])
 
                 self.move_worker_board(worker, move_forward_and_back[valid_direction])
-            print(valid_move_directions)
             
         return possible_moves
                 
