@@ -113,11 +113,10 @@ class Board:
         return possible_moves
                 
     def save_to_momento(self):
-        return Memento(deepcopy(self.squares))
+        return Memento(deepcopy(self))
 
     def restore_from_memento(self, memento):
-        self.squares = memento.get_saved_state()
-
+        self = memento.get_saved_state()
 
     def __repr__(self):
         board_representation = "+--+--+--+--+--+\n"

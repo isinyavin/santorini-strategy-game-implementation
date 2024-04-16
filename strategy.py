@@ -1,3 +1,8 @@
+
+
+
+
+
 from command import Invoker, BuildCommand, MoveWorkerCommand, SantoriniCommand
 import random
 
@@ -11,12 +16,11 @@ class Player:
 
 class PlayerStrategy:
     def next_move(self, game):
-        pass
+        c
 
 class RandomStrategy(PlayerStrategy):
     def next_move(self, game):
         possible_moves = game.board.enumerate_all_available_moves(game.curr_player_to_move)
-        print(possible_moves)
         if possible_moves:
             move =  random.choice(possible_moves)
         move_command = MoveWorkerCommand(game, move[0], move[1])
@@ -28,7 +32,41 @@ class RandomStrategy(PlayerStrategy):
 
 class HeuristicStrategy(PlayerStrategy):
     def next_move(self, game):
-        pass
+        possible_moves = game.board.enumerate_all_available_moves(game.curr_player_to_move)
+        scores = []
+        for moves in possible_moves:
+            momento = game.board.save_to_momento()
+            board = momento.get_saved_state()
+            board.move_worker_board(moves[0], moves[1])
+            board.build_board(moves[0], moves[2])
+            height_score = HeuristicStrategy.height_calculate(board, game)
+            weight1 = 1
+            weight2 = 1
+            weight3 = 1
+            scores.append(weight1*height_score)
+        print(scores)
+        index = scores.index(max(scores))
+        actual_move = possible_moves[index]
+        move_command = MoveWorkerCommand(game, actual_move[0], actual_move[1])
+        game.invoker.store_command(move_command)
+        build_command = BuildCommand(game, actual_move[0], actual_move[2])
+        game.invoker.store_command(build_command)
+        game.invoker.execute_commands()
+        print(f"Optimized moves: {actual_move[0]},{actual_move[1]},{actual_move[2]}")
+        
+
+    def height_calculate(board, game):
+        height = 0
+        if game.cur_player_object == game.player1:
+            workers = ["A","B"]
+        if game.cur_player_object == game.player2:
+            workers = ["Z", "Y"]
+        for line in board.squares:
+            for square in line:
+                if str(square.worker) in workers:
+                    height += square.level
+        return height
+
 
 class HumanInput(PlayerStrategy):
     def next_move(self, game):
@@ -42,12 +80,22 @@ class HumanInput(PlayerStrategy):
         
         while approved == False:
             worker = input("Select a worker to move\n")
-            print(worker)
             if worker not in possible_workers:
                 print("Not a valid worker")
                 continue
             if ((worker in ["Y", "Z"]) and (game.get_curr_player_to_move() == "white")) or ((worker in ["B", "A"] and (game.get_curr_player_to_move() == "blue"))):
                 print("That is not your worker")
+            possible_moves = game.board.enumerate_all_available_moves(game.curr_player_to_move)
+            if len(possible_moves) > 0:
+                eligible_workers = []
+                for move in possible_moves:
+                    eligible_workers.append(move[0])
+                options = set(eligible_workers)
+                if worker not in options:
+                    print("Worker cannot move")
+                    continue
+                else:
+                    approved = True
             else:
                 approved = True
 

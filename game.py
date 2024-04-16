@@ -67,14 +67,13 @@ class Game:
         if len(self.history) >= 1: 
             memento = self.history.pop()
             self.future.append(memento)
-            self.board.restore_from_memento(self.history[-1]) if len(self.history) > 1 else self.board.restore_from_memento(self.history[0])
+            self.restore_from_memento(self.history[-1])
     
     def redo(self):
         if self.future:
             memento = self.future.pop()
             self.history.append(memento)
-            self.board.restore_from_memento(memento)
-
+            self.restore_from_memento(memento)
 
     def __repr__(self):
         game_representation = ""
