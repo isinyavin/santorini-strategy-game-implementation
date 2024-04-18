@@ -1,5 +1,7 @@
 from board import Board
 from command import Invoker
+from momento import Momento
+from copy import deepcopy
 
 class Game:
     def __init__(self, player1, player2):
@@ -67,13 +69,16 @@ class Game:
         if len(self.history) >= 1: 
             memento = self.history.pop()
             self.future.append(memento)
-            self.restore_from_memento(self.history[-1])
+            self.restore_from_memento(memento)
     
     def redo(self):
         if self.future:
             memento = self.future.pop()
             self.history.append(memento)
             self.restore_from_memento(memento)
+
+    def save_to_memento(self):
+        return Momento(deepcopy(self))
 
     def __repr__(self):
         game_representation = ""

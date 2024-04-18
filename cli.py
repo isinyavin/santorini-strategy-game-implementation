@@ -3,6 +3,7 @@ from board import Board
 from command import Invoker, BuildCommand, MoveWorkerCommand, SantoriniCommand 
 from strategy import Player, PlayerStrategy, HumanInput, RandomStrategy, HeuristicStrategy
 from copy import deepcopy
+from momento import Momento
 
 class GameInterface:
     def run(self):
@@ -25,16 +26,13 @@ class UndoRedoDecorator(GameInterface):
         self.future = []
 
     def run(self):
-        self.history.append(self.save_to_memento())
+        #self.history.append(self.game_cli.game.save_to_memento())
         while True:
+            print(len(self.history))
             self.game_cli.retrieve_all_possible_moves()
             self.game_cli.print_game_state()
             self.game_cli.winner_winner_chicken_dinner()
-            self.game_cli.game.cur_player_object.play_turn(self.game_cli.game)
             self.prompt_undo_redo_next()
-            self.history.append(self.save_to_memento())
-            self.future.clear()
-            self.game_cli.game.next_turn()
 
     def prompt_undo_redo_next(self):
         valid = False
@@ -43,40 +41,40 @@ class UndoRedoDecorator(GameInterface):
             if choice == "undo":
                 if len(self.history) >= 1: 
                     self.undo()
-                    self.print_game_state() 
                     valid = True
                 else:
                     print("No more moves to undo.")
             elif choice == "redo":
                 if self.future: 
                     self.redo()
-                    self.print_game_state() 
                     valid = True
                 else:
                     print("No more moves to redo.")
             elif choice == "next":
                 valid = True
-            
+                self.history.append(self.game_cli.game.save_to_memento())
+                self.game_cli.game.cur_player_object.play_turn(self.game_cli.game)
+                self.game_cli.game.next_turn()
             else:
                 print("Invalid input")
 
     def undo(self):
         if self.history:
-            self.future.append(self.save_to_memento())
+            self.future.append(self.game_cli.game.save_to_memento())
             last_state = self.history.pop()
             self.restore_from_memento(last_state)
 
     def redo(self):
         if self.future:
-            self.history.append(self.save_to_memento())
+            self.history.append(self.game_cli.game.save_to_memento())
             next_state = self.future.pop()
             self.restore_from_memento(next_state)
 
     def save_to_memento(self):
-        return deepcopy(self.game_cli.game)
+        return Momento(deepcopy(self.game_cli.game))
 
     def restore_from_memento(self, memento):
-        self.game_cli.game = memento
+        self.game_cli.game = memento.get_saved_state()
 
 class GameCLI:
     def __init__(self, type1, type2):
