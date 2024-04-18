@@ -16,7 +16,7 @@ class Player:
 
 class PlayerStrategy:
     def next_move(self, game):
-        c
+        pass
 
 class RandomStrategy(PlayerStrategy):
     def next_move(self, game):
@@ -40,11 +40,15 @@ class HeuristicStrategy(PlayerStrategy):
             board.move_worker_board(moves[0], moves[1])
             board.build_board(moves[0], moves[2])
             height_score = HeuristicStrategy.height_calculate(board, game)
+            center_score = HeuristicStrategy.center_calculate(board, game)
+            distance_score = HeuristicStrategy.distance_calculate(board, game)
+
             weight1 = 1
             weight2 = 1
             weight3 = 1
-            scores.append(weight1*height_score)
-        print(scores)
+
+            scores.append(weight1*height_score + weight2*center_score + weight3*distance_score)
+            
         index = scores.index(max(scores))
         actual_move = possible_moves[index]
         move_command = MoveWorkerCommand(game, actual_move[0], actual_move[1])
@@ -66,7 +70,43 @@ class HeuristicStrategy(PlayerStrategy):
                 if str(square.worker) in workers:
                     height += square.level
         return height
+    
+    def distance_calculate(board, game):
+        distance_score = 0
+        if game.cur_player_object == game.player1:
+            workers = ["A","B"]
+        if game.cur_player_object == game.player2:
+            workers = ["Z", "Y"]
+        for line in board.squares:
+            for square in line:
+                if str(square.worker) in workers:
+                    for line2 in board.squares:
+                        for square2 in line2:
+                            if str(square2.worker) not in workers:
+                                distance = abs(line.index(square) - line2.index(square2)) + abs(board.squares.index(line) - board.squares.index(line2))
+                                if distance < distance_score:
+                                    distance_score = distance
+        return 8 - distance_score
 
+
+    def center_calculate(board, game):
+        center_score = 0
+        if game.cur_player_object == game.player1:
+            workers = ["A","B"]
+        if game.cur_player_object == game.player2:
+            workers = ["Z", "Y"]
+        for line in board.squares:
+            for square in line:
+                if str(square.worker) in workers:
+                    if line.index(square) == 2 or line.index(square) == 3:
+                        if board.squares.index(line) == 2 or board.squares.index(line) == 3:
+                            center_score += 2
+                    elif line.index(square) == 1 or line.index(square) == 4:
+                        if board.squares.index(line) == 1 or  board.squares.index(line) == 4:
+                            center_score += 1
+                    else:
+                        center_score += 0
+        return center_score
 
 class HumanInput(PlayerStrategy):
     def next_move(self, game):
