@@ -26,7 +26,6 @@ class UndoRedoDecorator(GameInterface):
         self.future = []
 
     def run(self):
-        #self.history.append(self.game_cli.game.save_to_memento())
         while True:
             print(len(self.history))
             self.game_cli.retrieve_all_possible_moves()
@@ -55,6 +54,7 @@ class UndoRedoDecorator(GameInterface):
                 self.history.append(self.game_cli.game.save_to_memento())
                 self.game_cli.game.cur_player_object.play_turn(self.game_cli.game)
                 self.game_cli.game.next_turn()
+                self.future.clear()
             else:
                 print("Invalid input")
 
@@ -82,10 +82,9 @@ class GameCLI:
         human_strategy = HumanInput()
         random_strategy = RandomStrategy()
         heuristic_strategy = HeuristicStrategy()
-        self.undo_redo_next = False
         if type1 == "human" and type2 == "human":
             player1 = Player(heuristic_strategy)
-            player2 = Player(heuristic_strategy)
+            player2 = Player(random_strategy)
         self.game = Game(player1, player2)
         
     def run(self):
@@ -120,4 +119,4 @@ class GameCLI:
 if __name__ == "__main__":
     cli = GameCLI("human", "human")
     game_cli = UndoRedoDecorator(cli)
-    game_cli.run()
+    cli.run()
