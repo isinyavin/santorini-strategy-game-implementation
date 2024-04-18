@@ -2,9 +2,85 @@ from game import Game
 from board import Board
 from command import Invoker, BuildCommand, MoveWorkerCommand, SantoriniCommand 
 from strategy import Player, PlayerStrategy, HumanInput, RandomStrategy, HeuristicStrategy
+from copy import deepcopy
+
+class GameInterface:
+    def run(self):
+        pass
+
+class GameCLI(GameInterface):
+    def __init__(self, game, player1, player2):
+        self.game = game
+        self.player1 = player1
+        self.player2 = player2
+
+    def run(self):
+        while True:
+            pass
+
+class UndoRedoDecorator(GameInterface):
+    def __init__(self, game_cli):
+        self.game_cli = game_cli
+        self.history = []
+        self.future = []
+
+    def run(self):
+        self.history.append(self.save_to_memento())
+        while True:
+            self.game_cli.retrieve_all_possible_moves()
+            self.game_cli.print_game_state()
+            self.game_cli.winner_winner_chicken_dinner()
+            self.game_cli.game.cur_player_object.play_turn(self.game_cli.game)
+            self.prompt_undo_redo_next()
+            self.history.append(self.save_to_memento())
+            self.future.clear()
+            self.game_cli.game.next_turn()
+
+    def prompt_undo_redo_next(self):
+        valid = False
+        while not valid:
+            choice = input("undo, redo, or next\n").strip().lower()
+            if choice == "undo":
+                if len(self.history) >= 1: 
+                    self.undo()
+                    self.print_game_state() 
+                    valid = True
+                else:
+                    print("No more moves to undo.")
+            elif choice == "redo":
+                if self.future: 
+                    self.redo()
+                    self.print_game_state() 
+                    valid = True
+                else:
+                    print("No more moves to redo.")
+            elif choice == "next":
+                valid = True
+            
+            else:
+                print("Invalid input")
+
+    def undo(self):
+        if self.history:
+            self.future.append(self.save_to_memento())
+            last_state = self.history.pop()
+            self.restore_from_memento(last_state)
+
+    def redo(self):
+        if self.future:
+            self.history.append(self.save_to_memento())
+            next_state = self.future.pop()
+            self.restore_from_memento(next_state)
+
+    def save_to_memento(self):
+        return deepcopy(self.game_cli.game)
+
+    def restore_from_memento(self, memento):
+        self.game_cli.game = memento
 
 class GameCLI:
     def __init__(self, type1, type2):
+
         human_strategy = HumanInput()
         random_strategy = RandomStrategy()
         heuristic_strategy = HeuristicStrategy()
@@ -15,16 +91,11 @@ class GameCLI:
         self.game = Game(player1, player2)
         
     def run(self):
-        self.game.history.append(self.game.board.save_to_momento())
         while True:
             self.retrieve_all_possible_moves()
             self.print_game_state()
             self.winner_winner_chicken_dinner()
-            print(len(self.game.history))
-            if self.undo_redo_next: self.prompt_undo_redo_next()
             self.game.cur_player_object.play_turn(self.game)
-            self.game.history.append(self.game.board.save_to_momento())
-            self.game.future.clear()
             self.game.next_turn()
 
     def winner_winner_chicken_dinner(self):
@@ -38,30 +109,6 @@ class GameCLI:
             else:
                 self.quit()
 
-    def prompt_undo_redo_next(self):
-        valid = False
-        while not valid:
-            choice = input("undo, redo, or next\n").strip().lower()
-            if choice == "undo":
-                if len(self.game.history) >= 1: 
-                    self.game.undo()
-                    self.print_game_state() 
-                    valid = True
-                else:
-                    print("No more moves to undo.")
-            elif choice == "redo":
-                if self.game.future: 
-                    self.game.redo()
-                    self.print_game_state() 
-                    valid = True
-                else:
-                    print("No more moves to redo.")
-            elif choice == "next":
-                valid = True
-            
-            else:
-                print("Invalid input")
-
     
     def retrieve_all_possible_moves(self):
         self.game.retrieve_moves()
@@ -73,4 +120,6 @@ class GameCLI:
         exit()
         
 if __name__ == "__main__":
-    GameCLI("human", "human").run()
+    cli = GameCLI("human", "human")
+    game_cli = UndoRedoDecorator(cli)
+    game_cli.run()
