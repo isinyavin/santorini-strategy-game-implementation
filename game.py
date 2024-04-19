@@ -77,9 +77,6 @@ class Game:
             self.history.append(memento)
             self.restore_from_memento(memento)
 
-    def save_to_memento(self):
-        return Momento(deepcopy(self))
-
     def __repr__(self):
         game_representation = ""
         game_representation += repr(self.board)

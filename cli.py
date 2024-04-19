@@ -51,7 +51,7 @@ class UndoRedoDecorator(GameInterface):
                     print("No more moves to redo.")
             elif choice == "next":
                 valid = True
-                self.history.append(self.game_cli.game.save_to_memento())
+                self.history.append(Momento(deepcopy(self.game_cli.game)))
                 self.game_cli.game.cur_player_object.play_turn(self.game_cli.game)
                 self.game_cli.game.next_turn()
                 self.future.clear()
@@ -60,21 +60,19 @@ class UndoRedoDecorator(GameInterface):
 
     def undo(self):
         if self.history:
-            self.future.append(self.game_cli.game.save_to_memento())
+            self.future.append(Momento(deepcopy(self.game_cli.game)))
             last_state = self.history.pop()
             self.restore_from_memento(last_state)
 
     def redo(self):
         if self.future:
-            self.history.append(self.game_cli.game.save_to_memento())
+            self.history.append(Momento(deepcopy(self.game_cli.game)))
             next_state = self.future.pop()
             self.restore_from_memento(next_state)
 
-    def save_to_memento(self):
-        return Momento(deepcopy(self.game_cli.game))
-
     def restore_from_memento(self, memento):
         self.game_cli.game = memento.get_saved_state()
+
 
 class GameCLI:
     def __init__(self, type1, type2):
@@ -119,4 +117,4 @@ class GameCLI:
 if __name__ == "__main__":
     cli = GameCLI("human", "human")
     game_cli = UndoRedoDecorator(cli)
-    cli.run()
+    game_cli.run()
