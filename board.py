@@ -4,18 +4,23 @@ from iterator import SantoriniSquareIterator
 from momento import Momento
 from copy import deepcopy
 
-class Board:
-    def __init__(self):
-        self.workerY = Worker("Y", 1, 1)
-        self.workerB = Worker("B", 3, 1)
-        self.workerA = Worker("A", 1, 3)
-        self.workerZ = Worker("Z", 3, 3)
-        self.squares = [[Square() for i in range(5)] for i in range(5)]
+class AbstractBoard:
+    def __init__(self, num_rows, num_cols):
+        self.squares = [[Square() for i in range(num_rows)] for i in range(num_cols)]
+
+class SantoriniBoard(AbstractBoard):
+    def __init__(self, worker_factory):
+        super().__init__(5, 5)
+        self.workerY = worker_factory.create_worker("Y", 1, 1)
+        self.workerA = worker_factory.create_worker("A", 3, 1)
+        self.workerB = worker_factory.create_worker("B", 1, 3)
+        self.workerZ = worker_factory.create_worker("Z", 3, 3)
+
         self.squares[1][1].set_worker(self.workerY)
         self.squares[3][1].set_worker(self.workerB)
         self.squares[1][3].set_worker(self.workerA)
         self.squares[3][3].set_worker(self.workerZ)
-
+        
     def check_if_winning_board(self):
         iteratable_board = SantoriniSquareIterator(self.squares)
         for square in iteratable_board:

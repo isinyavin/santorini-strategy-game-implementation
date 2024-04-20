@@ -1,8 +1,3 @@
-
-
-
-
-
 from command import Invoker, BuildCommand, MoveWorkerCommand, SantoriniCommand
 import random
 
@@ -28,7 +23,7 @@ class RandomStrategy(PlayerStrategy):
         build_command = BuildCommand(game, move[0], move[2])
         game.invoker.store_command(build_command)
         game.invoker.execute_commands()
-        print(f"{move[0]},{move[1]},{move[2]}")
+        print(f"{move[0]},{move[1]},{move[2]} {HeuristicStrategy.total_score(game, game.board)}")
 
 class HeuristicStrategy(PlayerStrategy):
     def next_move(self, game):
@@ -56,9 +51,15 @@ class HeuristicStrategy(PlayerStrategy):
         build_command = BuildCommand(game, actual_move[0], actual_move[2])
         game.invoker.store_command(build_command)
         game.invoker.execute_commands()
-        print(f"Optimized moves: {actual_move[0]},{actual_move[1]},{actual_move[2]}")
+        print(f"{actual_move[0]},{actual_move[1]},{actual_move[2]}")
+    
+    
+    def total_score(game, board): 
+        height_score = HeuristicStrategy.height_calculate(board, game)
+        center_score = HeuristicStrategy.center_calculate(board, game)
+        distance_score = HeuristicStrategy.distance_calculate(board, game)
+        return f"({height_score}, {center_score}, {distance_score})"
         
-
     def height_calculate(board, game):
         height = 0
         if game.cur_player_object == game.player1:
@@ -71,22 +72,51 @@ class HeuristicStrategy(PlayerStrategy):
                     height += square.level
         return height
     
+    
     def distance_calculate(board, game):
-        distance_score = 0
         if game.cur_player_object == game.player1:
-            workers = ["A","B"]
-        if game.cur_player_object == game.player2:
+            workers = ["A", "B"]
+            others = ["Y", "Z"]
+        elif game.cur_player_object == game.player2:
             workers = ["Z", "Y"]
-        for line in board.squares:
-            for square in line:
-                if str(square.worker) in workers:
-                    for line2 in board.squares:
-                        for square2 in line2:
-                            if str(square2.worker) not in workers:
-                                distance = abs(line.index(square) - line2.index(square2)) + abs(board.squares.index(line) - board.squares.index(line2))
-                                if distance < distance_score:
-                                    distance_score = distance
-        return 8 - distance_score
+            others = ["A", "B"]
+
+        distance_a = 0
+        distance_b = 0
+                
+        distance_c = 0
+        distance_d = 0
+            
+        for first_worker_row in board.squares:
+            for first_worker_column in first_worker_row:
+                if str(first_worker_column.worker) in workers:
+
+                    for second_worker_row in board.squares:
+                        for second_worker_column in second_worker_row:
+                            if str(second_worker_column.worker) in others:
+
+                                y1 = board.squares.index(first_worker_row)
+                                y2 = board.squares.index(second_worker_row)
+
+                                x1 = first_worker_row.index(first_worker_column)
+                                x2 = second_worker_row.index(second_worker_column)
+
+                                distance = max(abs(y1 - y2), abs(x1 - x2))
+
+                                if str(first_worker_column.worker) in ['A','Y']:
+                                    if distance_a == 0:
+                                        distance_a += distance
+                                    else:
+                                        distance_b += distance
+                                elif str(first_worker_column.worker) in ['B','Z']:
+                                    if distance_c == 0:
+                                        distance_c += distance
+                                    else:
+                                        distance_d += distance
+
+        final_distance = min(distance_a, distance_b) + min(distance_c, distance_d)
+
+        return 8 - final_distance
 
 
     def center_calculate(board, game):
@@ -95,17 +125,21 @@ class HeuristicStrategy(PlayerStrategy):
             workers = ["A","B"]
         if game.cur_player_object == game.player2:
             workers = ["Z", "Y"]
-        for line in board.squares:
-            for square in line:
-                if str(square.worker) in workers:
-                    if line.index(square) == 2 or line.index(square) == 3:
-                        if board.squares.index(line) == 2 or board.squares.index(line) == 3:
-                            center_score += 2
-                    elif line.index(square) == 1 or line.index(square) == 4:
-                        if board.squares.index(line) == 1 or  board.squares.index(line) == 4:
-                            center_score += 1
-                    else:
-                        center_score += 0
+
+        center_score = 0
+
+        for first_worker_row in board.squares:
+            for first_worker_column in first_worker_row:
+                if str(first_worker_column.worker) in workers:
+
+                    x1 = first_worker_row.index(first_worker_column)
+                    y1 = board.squares.index(first_worker_row)
+
+                    if x1 == 3 and y1 == 3:
+                        center_score += 2
+                    elif x1 == 2 or x1 == 4 and y1 == 2 or y1 == 4:
+                        center_score += 1
+
         return center_score
 
 class HumanInput(PlayerStrategy):
@@ -168,7 +202,6 @@ class HumanInput(PlayerStrategy):
 
         game.board.move_worker_board(worker, move_forward_and_back[direction])
         game.invoker.execute_commands()
-        print(f"{worker},{direction},{build_direction}")
-        
+        print(f"{worker},{direction},{build_direction} {HeuristicStrategy.total_score(game, game.board)}")
 
 

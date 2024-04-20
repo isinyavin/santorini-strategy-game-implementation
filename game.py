@@ -1,14 +1,17 @@
-from board import Board
+from board import SantoriniBoard
 from command import Invoker
 from momento import Momento
+from worker import Worker, WorkerFactory
 from copy import deepcopy
+from strategy import Player, PlayerStrategy, HumanInput, RandomStrategy, HeuristicStrategy
+
 
 class Game:
     def __init__(self, player1, player2):
         self.invoker = Invoker()
-        self.turn_amount = 0
+        self.turn_amount = 1
         self.curr_player_to_move = "white"
-        self.board = Board()
+        self.board = SantoriniBoard(WorkerFactory())
         self.history = []
         self.future = []
         self.player1 = player1
@@ -17,7 +20,6 @@ class Game:
         
     def check_win(self):
         winning_player = self.board.check_if_winning_board()
-        print(winning_player)
         if str(winning_player) in ["A","B"]:
             return "white"
         if str(winning_player) in ["Y", "Z"]:
@@ -36,7 +38,7 @@ class Game:
         if self.cur_player_object == self.player1:
             self.cur_player_object = self.player2
         else:
-            self.cur_player_object == self.player1
+            self.cur_player_object = self.player1
     
     def get_turn_num(self):
         return self.turn_amount

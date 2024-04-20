@@ -1,3 +1,7 @@
+class WorkerFactory:
+    def create_worker(self, name, x, y):
+        return Worker(name, x, y)
+
 class Worker:
     def __init__(self, letter, x, y):
         if letter in ["A", "B", "Y", "Z"]:
