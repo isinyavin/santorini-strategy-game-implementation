@@ -1,33 +1,21 @@
 from game import Game
-from command import Invoker, BuildCommand, MoveWorkerCommand, SantoriniCommand 
-from strategy import Player, PlayerStrategy, HumanInput, RandomStrategy, HeuristicStrategy
+from strategy import Player, HumanInput, RandomStrategy, HeuristicStrategy
 from copy import deepcopy
-from momento import Momento
+from momento import Momento, Caretaker
 import sys
 
 class GameInterface:
     def run(self):
         pass
 
-class GameCLI(GameInterface):
-    def __init__(self, game, player1, player2):
-        self.game = game
-        self.player1 = player1
-        self.player2 = player2
-
-    def run(self):
-        while True:
-            pass
-
 class UndoRedoDecorator(GameInterface):
     def __init__(self, game_cli):
         self.game_cli = game_cli
-        self._history = []
-        self._future = []
+        self.caretaker = Caretaker(self)
 
     def run(self):
+        """Initiates the game loop when decorator is enabled for undo/redo"""
         while True:
-            print(len(self._history))
             self.game_cli._retrieve_all_possible_moves()
             self.game_cli._print_game_state()
             self.game_cli._winner_winner_chicken_dinner()
@@ -38,45 +26,25 @@ class UndoRedoDecorator(GameInterface):
         while not valid:
             choice = input("undo, redo, or next\n").strip().lower()
             if choice == "undo":
-                if len(self._history) >= 1: 
-                    self._undo()
-                    valid = True
-                else:
-                    print("No more moves to undo.")
-            elif choice == "redo":
-                if self._future: 
-                    self._redo()
-                    valid = True
-                else:
-                    print("No more moves to redo.")
-            elif choice == "next":
+                self.caretaker.undo()
                 valid = True
-                self._history.append(Momento(deepcopy(self.game_cli.game)))
-                self.game_cli.game.cur_player_object.play_turn(self.game_cli.game)
+            elif choice == "redo":
+                self.caretaker.redo()
+                valid = True
+            elif choice == "next":
+                self.caretaker.backup()
+                self.game_cli.game.cur_player_object.play_turn(self.game_cli.game, self.game_cli)
                 self.game_cli.game.next_turn()
-                self._future.clear()
+                valid = True
             else:
                 print("Invalid input")
 
-    def _undo(self):
-        if self._history:
-            self._future.append(Momento(deepcopy(self.game_cli.game)))
-            last_state = self._history.pop()
-            self._restore_from_memento(last_state)
-
-    def _redo(self):
-        if self._future:
-            self._history.append(Momento(deepcopy(self.game_cli.game)))
-            next_state = self._future.pop()
-            self._restore_from_memento(next_state)
-
-    def _restore_from_memento(self, memento):
+    def restore(self, memento):
         self.game_cli.game = memento.get_saved_state()
 
-
-class GameCLI:
+class GameCLI():
     def __init__(self, type1, type2, rank):
-
+        """Initializes the GameCLI"""
         human_strategy = HumanInput()
         random_strategy = RandomStrategy()
         heuristic_strategy = HeuristicStrategy()
@@ -97,11 +65,12 @@ class GameCLI:
         self.game = Game(player1, player2)
         
     def run(self):
+        """Initiates the game input loop."""
         while True:
             self._retrieve_all_possible_moves()
             self._print_game_state()
             self._winner_winner_chicken_dinner()
-            self.game.cur_player_object.play_turn(self.game)
+            self.game.cur_player_object.play_turn(self.game, self)
             self.game.next_turn()
 
     def _winner_winner_chicken_dinner(self):
@@ -129,7 +98,7 @@ class GameCLI:
         if not self.score_output:
             print(self.game)
         if self.score_output: 
-            print(f"{self.game}, {HeuristicStrategy.total_score(self.game, self.game.board)}")
+            print(f"{self.game}, {HeuristicStrategy._total_score(self.game, self.game.board)}")
 
     def _quit(self):
         exit()

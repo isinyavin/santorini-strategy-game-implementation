@@ -1,20 +1,23 @@
-from command import Invoker, BuildCommand, MoveWorkerCommand, SantoriniCommand
+from command import BuildCommand, MoveWorkerCommand
 import random
 
 class Player:
     def __init__(self, strategy):
+        """Initializes player object"""
         self.strategy = strategy
 
-    def play_turn(self, game):
-        return self.strategy.next_move(game)
-
+    def play_turn(self, game, gamecli):
+        """Initiates a move for the player using specified strategy"""
+        return self.strategy.next_move(game, gamecli)
 
 class PlayerStrategy:
-    def next_move(self, game):
+    def next_move(self, game, gamecli):
+        """Interface to implement next move logic below."""
         pass
 
 class RandomStrategy(PlayerStrategy):
-    def next_move(self, game):
+    def next_move(self, game, gamecli):
+        """Plays random next move based on all possible moves for player"""
         possible_moves = game.board.enumerate_all_available_moves(game.curr_player_to_move)
         if possible_moves:
             move =  random.choice(possible_moves)
@@ -23,10 +26,15 @@ class RandomStrategy(PlayerStrategy):
         build_command = BuildCommand(game, move[0], move[2])
         game.invoker.store_command(build_command)
         game.invoker.execute_commands()
-        print(f"{move[0]},{move[1]},{move[2]} {HeuristicStrategy.total_score(game, game.board)}")
+
+        if not gamecli.score_output:
+             print(f"{move[0]},{move[1]},{move[2]}")
+        if gamecli.score_output: 
+            print(f"{move[0]},{move[1]},{move[2]} {HeuristicStrategy._total_score(game, game.board)}")
 
 class HeuristicStrategy(PlayerStrategy):
-    def next_move(self, game):
+    def next_move(self, game, gamecli):
+        """Plays next move based on heuristic strategy"""
         possible_moves = game.board.enumerate_all_available_moves(game.curr_player_to_move)
         scores = []
         for moves in possible_moves:
@@ -34,9 +42,9 @@ class HeuristicStrategy(PlayerStrategy):
             board = momento.get_saved_state()
             board.move_worker_board(moves[0], moves[1])
             board.build_board(moves[0], moves[2])
-            height_score = HeuristicStrategy.height_calculate(board, game)
-            center_score = HeuristicStrategy.center_calculate(board, game)
-            distance_score = HeuristicStrategy.distance_calculate(board, game)
+            height_score = HeuristicStrategy._height_calculate(board, game)
+            center_score = HeuristicStrategy._center_calculate(board, game)
+            distance_score = HeuristicStrategy._distance_calculate(board, game)
 
             weight1 = 1
             weight2 = 1
@@ -45,22 +53,25 @@ class HeuristicStrategy(PlayerStrategy):
             scores.append(weight1*height_score + weight2*center_score + weight3*distance_score)
             
         index = scores.index(max(scores))
-        actual_move = possible_moves[index]
-        move_command = MoveWorkerCommand(game, actual_move[0], actual_move[1])
+        move = possible_moves[index]
+        move_command = MoveWorkerCommand(game, move[0], move[1])
         game.invoker.store_command(move_command)
-        build_command = BuildCommand(game, actual_move[0], actual_move[2])
+        build_command = BuildCommand(game, move[0], move[2])
         game.invoker.store_command(build_command)
         game.invoker.execute_commands()
-        print(f"{actual_move[0]},{actual_move[1]},{actual_move[2]}")
+
+        if not gamecli.score_output:
+             print(f"{move[0]},{move[1]},{move[2]}")
+        if gamecli.score_output: 
+            print(f"{move[0]},{move[1]},{move[2]} {HeuristicStrategy._total_score(game, game.board)}")
     
-    
-    def total_score(game, board): 
-        height_score = HeuristicStrategy.height_calculate(board, game)
-        center_score = HeuristicStrategy.center_calculate(board, game)
-        distance_score = HeuristicStrategy.distance_calculate(board, game)
+    def _total_score(game, board): 
+        height_score = HeuristicStrategy._height_calculate(board, game)
+        center_score = HeuristicStrategy._center_calculate(board, game)
+        distance_score = HeuristicStrategy._distance_calculate(board, game)
         return f"({height_score}, {center_score}, {distance_score})"
         
-    def height_calculate(board, game):
+    def _height_calculate(board, game):
         height = 0
         if game.cur_player_object == game.player1:
             workers = ["A","B"]
@@ -73,7 +84,7 @@ class HeuristicStrategy(PlayerStrategy):
         return height
     
     
-    def distance_calculate(board, game):
+    def _distance_calculate(board, game):
         if game.cur_player_object == game.player1:
             workers = ["A", "B"]
             others = ["Y", "Z"]
@@ -83,7 +94,6 @@ class HeuristicStrategy(PlayerStrategy):
 
         distance_a = 0
         distance_b = 0
-                
         distance_c = 0
         distance_d = 0
             
@@ -114,12 +124,11 @@ class HeuristicStrategy(PlayerStrategy):
                                     else:
                                         distance_d += distance
 
-        final_distance = min(distance_a, distance_b) + min(distance_c, distance_d)
-
+        final_distance = min(distance_a, distance_c) + min(distance_b, distance_d)
         return 8 - final_distance
 
 
-    def center_calculate(board, game):
+    def _center_calculate(board, game):
         center_score = 0
         if game.cur_player_object == game.player1:
             workers = ["A","B"]
@@ -135,15 +144,20 @@ class HeuristicStrategy(PlayerStrategy):
                     x1 = first_worker_row.index(first_worker_column)
                     y1 = board.squares.index(first_worker_row)
 
-                    if x1 == 3 and y1 == 3:
+                    if x1 == 2 and y1 == 2:
                         center_score += 2
-                    elif x1 == 2 or x1 == 4 and y1 == 2 or y1 == 4:
+                    elif x1 == 1 and y1 == 1 or y1 == 2 or y1 == 3:
+                        center_score += 1
+                    elif x1 == 2 and y1 == 1 or y1 == 3:
+                        center_score += 1
+                    elif x1 == 3 and y1 == 1 or y1 == 2 or y1 == 3:
                         center_score += 1
 
         return center_score
 
 class HumanInput(PlayerStrategy):
-    def next_move(self, game):
+    def next_move(self, game, gamecli):
+        """Retrives next move based on human input"""
         move_forward_and_back = {"n":"s", "s":"n", "e":"w", "w":"e", "nw":"se", "se":"nw", "ne":"sw", "sw":"ne"}
         possible_workers  = ["Y", "Z", "B", "A"]
         possible_directions = ["n", "e", "ne", "se", "s", "sw", "w", "nw"]
@@ -159,6 +173,7 @@ class HumanInput(PlayerStrategy):
                 continue
             if ((worker in ["Y", "Z"]) and (game.get_curr_player_to_move() == "white")) or ((worker in ["B", "A"] and (game.get_curr_player_to_move() == "blue"))):
                 print("That is not your worker")
+                continue
             possible_moves = game.board.enumerate_all_available_moves(game.curr_player_to_move)
             if len(possible_moves) > 0:
                 eligible_workers = []
@@ -202,6 +217,8 @@ class HumanInput(PlayerStrategy):
 
         game.board.move_worker_board(worker, move_forward_and_back[direction])
         game.invoker.execute_commands()
-        print(f"{worker},{direction},{build_direction} {HeuristicStrategy.total_score(game, game.board)}")
-
-
+        
+        if not gamecli.score_output:
+             print(f"{worker},{direction},{build_direction}")
+        if gamecli.score_output: 
+            print(f"{worker},{direction},{build_direction} {HeuristicStrategy._total_score(game, game.board)}")

@@ -1,15 +1,16 @@
 from square import Square
-from worker import Worker
 from iterator import SantoriniSquareIterator
 from momento import Momento
 from copy import deepcopy
 
 class AbstractBoard:
     def __init__(self, num_rows, num_cols):
+        """Initialize an abstract board with a given number of rows and columns filled with Square instances."""
         self.squares = [[Square() for i in range(num_rows)] for i in range(num_cols)]
 
 class SantoriniBoard(AbstractBoard):
     def __init__(self, worker_factory):
+        """Initialize the SantoriniBoard with specific worker placements using a worker factory."""
         super().__init__(5, 5)
         self.workerY = worker_factory.create_worker("Y", 1, 1)
         self.workerA = worker_factory.create_worker("A", 3, 1)
@@ -22,19 +23,21 @@ class SantoriniBoard(AbstractBoard):
         self.squares[3][3].set_worker(self.workerZ)
         
     def check_if_winning_board(self):
+        """Check all squares to determine if any worker has reached the third level, indicating a win."""
         iteratable_board = SantoriniSquareIterator(self.squares)
         for square in iteratable_board:
             if square.level == 3 and square.worker != None:
                 return square.worker
         
-    def get_new_coords_from_direction(self, worker_letter, direction):
-        worker = self.return_worker_from_letter(worker_letter)
+    def _get_new_coords_from_direction(self, worker_letter, direction):
+        worker = self._return_worker_from_letter(worker_letter)
         x_old, y_old = worker.get_coords()
         moved_coords = self.find_new_coords(x_old, y_old, direction)
         return moved_coords, worker
 
     def is_square_unoccupied_and_valid(self, worker, direction):
-        moved_coords, worker = self.get_new_coords_from_direction(worker, direction)
+        """Check if the square in the given direction is unoccupied and valid for movement or building."""
+        moved_coords, worker = self._get_new_coords_from_direction(worker, direction)
         x, y = moved_coords
         if not(x >= 0 and x <= 4 and y >= 0 and y <= 4):
             return False
@@ -44,14 +47,15 @@ class SantoriniBoard(AbstractBoard):
         else:
             return False
         
-    def return_worker_from_letter(self, worker):
+    def _return_worker_from_letter(self, worker):
         if worker == "A": return self.workerA
         if worker == "B": return self.workerB
         if worker == "Z": return self.workerZ
         if worker == "Y": return self.workerY
 
     def calculate_distance_jumped(self, worker, direction):
-        moved_coords, worker = self.get_new_coords_from_direction(worker, direction)
+        """Calculate the difference in level between the worker's current square and the target square."""
+        moved_coords, worker = self._get_new_coords_from_direction(worker, direction)
         x, y = moved_coords
         x_old,y_old = worker.get_coords()
         old_level = self.squares[x_old][y_old].get_level()
@@ -59,16 +63,18 @@ class SantoriniBoard(AbstractBoard):
         return new_level - old_level
 
     def validate_build(self, worker, direction):
-        moved_coords, worker = self.get_new_coords_from_direction(worker, direction)
+        """Validate if a building move is possible at the target square."""
+        moved_coords, worker = self._get_new_coords_from_direction(worker, direction)
         x, y = moved_coords
         level_of_target = self.squares[x][y].get_level()
-        if (level_of_target != 3):
+        if (level_of_target < 4):
             return True
         else:
             return False
         
     def move_worker_board(self, worker, direction):
-        moved_coords, worker = self.get_new_coords_from_direction(worker, direction)
+        """Move the specified worker to a new square in the given direction."""
+        moved_coords, worker = self._get_new_coords_from_direction(worker, direction)
         x, y = moved_coords
         x_old,y_old = worker.get_coords()
         worker.set_x(x)
@@ -77,13 +83,15 @@ class SantoriniBoard(AbstractBoard):
         self.squares[x_old][y_old].set_worker(None)
 
     def build_board(self, worker, direction):
-        moved_coords, worker = self.get_new_coords_from_direction(worker, direction)
+        """Increment the level of the building at the square in the given direction."""
+        moved_coords, worker = self._get_new_coords_from_direction(worker, direction)
         x, y = moved_coords
         self.squares[x][y].level_increment()
 
 
     @staticmethod
     def find_new_coords(x, y, direction):
+        """Static method to find new coordinates based on the current position and direction of movement."""
         if direction == "n": return x-1, y
         if direction == "s": return x +1,y
         if direction == "w": return x, y -1
@@ -95,6 +103,7 @@ class SantoriniBoard(AbstractBoard):
     
 
     def enumerate_all_available_moves(self, player):
+        """Enumerate all possible legal moves for a given player based on the current board state."""
         if player == "white":
             workers = ["A", "B"]
         if player =="blue":
@@ -118,12 +127,15 @@ class SantoriniBoard(AbstractBoard):
         return possible_moves
                 
     def save_to_momento(self):
+        """Save the current state of the board to a memento for undo functionality."""
         return Momento(deepcopy(self))
 
     def restore_from_memento(self, memento):
+        """Restore the board state from a memento."""
         self = memento.get_saved_state()
 
     def __repr__(self):
+        """Return a string representation of the board's current state."""
         board_representation = "+--+--+--+--+--+\n"
         for row in self.squares:
             board_representation += "|" + "|".join(repr(square) for square in row) + "|\n"
