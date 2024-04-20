@@ -79,9 +79,7 @@ class GameCLI():
             print(f"{winner} has won")
             check = input("Play again?\n")
             if check.lower() == "yes":
-                
                 game_cli = GameCLI(white_player_type, blue_player_type, score_display_bool)
-
                 if not undo_redo_bool:
                     game_cli.run()
                 else:

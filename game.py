@@ -18,6 +18,11 @@ class Game:
     def check_win(self):
         """Check the board state to determine if there is a winning condition."""
         winning_player = self.board.check_if_winning_board()
+        if len(self.board.enumerate_all_available_moves(self.curr_player_to_move)) == 0:
+            if self.curr_player_to_move == "white":
+                return "blue"
+            else:
+                return "white"
         if str(winning_player) in ["A","B"]:
             return "white"
         if str(winning_player) in ["Y", "Z"]:
@@ -73,19 +78,6 @@ class Game:
     def build(self, worker, direction):
         """Build on the board in a specified direction using a worker."""
         self.board.build_board(worker, direction)
-
-    '''def undo(self):
-        if len(self.history) >= 1: 
-            memento = self.history.pop()
-            self.future.append(memento)
-            self.restore_from_memento(memento)
-    
-    def redo(self):
-        if self.future:
-            memento = self.future.pop()
-            self.history.append(memento)
-            self.restore_from_memento(memento)
-    '''
 
     def __repr__(self):
         """Return a string representation of the current game state."""

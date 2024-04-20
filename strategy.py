@@ -20,7 +20,7 @@ class RandomStrategy(PlayerStrategy):
         """Plays random next move based on all possible moves for player"""
         possible_moves = game.board.enumerate_all_available_moves(game.curr_player_to_move)
         if possible_moves:
-            move =  random.choice(possible_moves)
+            move = random.choice(possible_moves)
         move_command = MoveWorkerCommand(game, move[0], move[1])
         game.invoker.store_command(move_command)
         build_command = BuildCommand(game, move[0], move[2])
