@@ -22,55 +22,55 @@ class GameCLI(GameInterface):
 class UndoRedoDecorator(GameInterface):
     def __init__(self, game_cli):
         self.game_cli = game_cli
-        self.history = []
-        self.future = []
+        self._history = []
+        self._future = []
 
     def run(self):
         while True:
-            print(len(self.history))
-            self.game_cli.retrieve_all_possible_moves()
-            self.game_cli.print_game_state()
-            self.game_cli.winner_winner_chicken_dinner()
-            self.prompt_undo_redo_next()
+            print(len(self._history))
+            self.game_cli._retrieve_all_possible_moves()
+            self.game_cli._print_game_state()
+            self.game_cli._winner_winner_chicken_dinner()
+            self._prompt_undo_redo_next()
 
-    def prompt_undo_redo_next(self):
+    def _prompt_undo_redo_next(self):
         valid = False
         while not valid:
             choice = input("undo, redo, or next\n").strip().lower()
             if choice == "undo":
-                if len(self.history) >= 1: 
-                    self.undo()
+                if len(self._history) >= 1: 
+                    self._undo()
                     valid = True
                 else:
                     print("No more moves to undo.")
             elif choice == "redo":
-                if self.future: 
-                    self.redo()
+                if self._future: 
+                    self._redo()
                     valid = True
                 else:
                     print("No more moves to redo.")
             elif choice == "next":
                 valid = True
-                self.history.append(Momento(deepcopy(self.game_cli.game)))
+                self._history.append(Momento(deepcopy(self.game_cli.game)))
                 self.game_cli.game.cur_player_object.play_turn(self.game_cli.game)
                 self.game_cli.game.next_turn()
-                self.future.clear()
+                self._future.clear()
             else:
                 print("Invalid input")
 
-    def undo(self):
-        if self.history:
-            self.future.append(Momento(deepcopy(self.game_cli.game)))
-            last_state = self.history.pop()
-            self.restore_from_memento(last_state)
+    def _undo(self):
+        if self._history:
+            self._future.append(Momento(deepcopy(self.game_cli.game)))
+            last_state = self._history.pop()
+            self._restore_from_memento(last_state)
 
-    def redo(self):
-        if self.future:
-            self.history.append(Momento(deepcopy(self.game_cli.game)))
-            next_state = self.future.pop()
-            self.restore_from_memento(next_state)
+    def _redo(self):
+        if self._future:
+            self._history.append(Momento(deepcopy(self.game_cli.game)))
+            next_state = self._future.pop()
+            self._restore_from_memento(next_state)
 
-    def restore_from_memento(self, memento):
+    def _restore_from_memento(self, memento):
         self.game_cli.game = memento.get_saved_state()
 
 
@@ -98,13 +98,13 @@ class GameCLI:
         
     def run(self):
         while True:
-            self.retrieve_all_possible_moves()
-            self.print_game_state()
-            self.winner_winner_chicken_dinner()
+            self._retrieve_all_possible_moves()
+            self._print_game_state()
+            self._winner_winner_chicken_dinner()
             self.game.cur_player_object.play_turn(self.game)
             self.game.next_turn()
 
-    def winner_winner_chicken_dinner(self):
+    def _winner_winner_chicken_dinner(self):
         winner = self.game.check_win()
         if winner != None:
             print(f"{winner} has won")
@@ -120,18 +120,18 @@ class GameCLI:
                     undo_redo_cli.run()
 
             else:
-                self.quit()
+                self._quit()
 
-    def retrieve_all_possible_moves(self):
+    def _retrieve_all_possible_moves(self):
         self.game.retrieve_moves()
 
-    def print_game_state(self):
+    def _print_game_state(self):
         if not self.score_output:
             print(self.game)
         if self.score_output: 
             print(f"{self.game}, {HeuristicStrategy.total_score(self.game, self.game.board)}")
 
-    def quit(self):
+    def _quit(self):
         exit()
         
 if __name__ == "__main__":
