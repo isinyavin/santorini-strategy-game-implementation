@@ -46,8 +46,8 @@ class HeuristicStrategy(PlayerStrategy):
             center_score = HeuristicStrategy._center_calculate(board, game)
             distance_score = HeuristicStrategy._distance_calculate(board, game)
 
-            weight1 = 1
-            weight2 = 1
+            weight1 = 3
+            weight2 = 2
             weight3 = 1
 
             scores.append(weight1*height_score + weight2*center_score + weight3*distance_score)

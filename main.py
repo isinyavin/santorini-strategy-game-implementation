@@ -4,6 +4,8 @@ from copy import deepcopy
 from momento import Momento, Caretaker
 import sys
 
+# sys.setrecursionlimit(2000) # uncomment this if you want to run more than 500 times
+
 class GameInterface:
     def run(self):
         pass
