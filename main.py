@@ -51,20 +51,20 @@ class GameCLI():
         random_strategy = RandomStrategy()
         heuristic_strategy = HeuristicStrategy()
 
-        if type1 == "human": player1 = Player(human_strategy)
-        if type1 == "heuristic": player1 = Player(heuristic_strategy)
-        if type1 == "random": player1 = Player(random_strategy)
+        if type1 == "human": player1 = Player(human_strategy, "human")
+        if type1 == "heuristic": player1 = Player(heuristic_strategy, "heuristic")
+        if type1 == "random": player1 = Player(random_strategy, "random")
         
-        if type2 == "human": player2 = Player(human_strategy)
-        if type2 == "heuristic":player2 = Player(heuristic_strategy)
-        if type2 == "random":player2 = Player(random_strategy)
+        if type2 == "human": player2 = Player(human_strategy, "human")
+        if type2 == "heuristic":player2 = Player(heuristic_strategy, "heuristic")
+        if type2 == "random":player2 = Player(random_strategy, "random")
 
         if rank == True: 
             self.score_output = True
         else:
             self.score_output = False
     
-        self.game = Game(player1, player2)
+        self.game = Game(player1, player2, "cli")
         
     def run(self):
         """Initiates the game input loop."""

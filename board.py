@@ -88,6 +88,10 @@ class SantoriniBoard(AbstractBoard):
         x, y = moved_coords
         self.squares[x][y].level_increment()
 
+    def find_worker_coords(self, selected_worker):
+        """Find the coordinates of the selected worker on the board."""
+        worker = self._return_worker_from_letter(selected_worker)
+        return worker.get_coords()
 
     @staticmethod
     def find_new_coords(x, y, direction):
@@ -99,6 +103,18 @@ class SantoriniBoard(AbstractBoard):
         if direction == "nw": return x-1,y-1
         if direction == "ne": return x-1,y+1
         if direction == "sw": return x+1,y-1
+        if direction == "se": return x+1,y+1
+
+    @staticmethod
+    def find_new_coords2(x, y, direction):
+        """Static method to find new coordinates based on the current position and direction of movement."""
+        if direction == "w": return x-1, y
+        if direction == "e": return x +1,y
+        if direction == "n": return x, y -1
+        if direction == "s": return x, y+1
+        if direction == "nw": return x-1,y-1
+        if direction == "sw": return x-1,y+1
+        if direction == "ne": return x+1,y-1
         if direction == "se": return x+1,y+1
     
 

@@ -3,9 +3,10 @@ from command import Invoker
 from worker import WorkerFactory
 
 class Game:
-    def __init__(self, player1, player2):
+    def __init__(self, player1, player2, type):
         """Initialize the game with two players, setting up the board and turn logic."""
         self.invoker = Invoker()
+        self.type = type
         self.turn_amount = 1
         self.curr_player_to_move = "white"
         self.board = SantoriniBoard(WorkerFactory())

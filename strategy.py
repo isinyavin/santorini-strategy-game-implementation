@@ -2,9 +2,10 @@ from command import BuildCommand, MoveWorkerCommand
 import random
 
 class Player:
-    def __init__(self, strategy):
+    def __init__(self, strategy, type):
         """Initializes player object"""
         self.strategy = strategy
+        self.type = type
 
     def play_turn(self, game, gamecli):
         """Initiates a move for the player using specified strategy"""
@@ -19,6 +20,7 @@ class RandomStrategy(PlayerStrategy):
     def next_move(self, game, gamecli):
         """Plays random next move based on all possible moves for player"""
         possible_moves = game.board.enumerate_all_available_moves(game.curr_player_to_move)
+        print(possible_moves)
         if possible_moves:
             move = random.choice(possible_moves)
         move_command = MoveWorkerCommand(game, move[0], move[1])
@@ -26,11 +28,11 @@ class RandomStrategy(PlayerStrategy):
         build_command = BuildCommand(game, move[0], move[2])
         game.invoker.store_command(build_command)
         game.invoker.execute_commands()
-
-        if not gamecli.score_output:
-             print(f"{move[0]},{move[1]},{move[2]}")
-        if gamecli.score_output: 
-            print(f"{move[0]},{move[1]},{move[2]} {HeuristicStrategy._total_score(game, game.board)}")
+        if game.type == "cli":
+            if not gamecli.score_output:
+                print(f"{move[0]},{move[1]},{move[2]}")
+            if gamecli.score_output: 
+                print(f"{move[0]},{move[1]},{move[2]} {HeuristicStrategy._total_score(game, game.board)}")
 
 class HeuristicStrategy(PlayerStrategy):
     def next_move(self, game, gamecli):
@@ -222,3 +224,4 @@ class HumanInput(PlayerStrategy):
              print(f"{worker},{direction},{build_direction}")
         if gamecli.score_output: 
             print(f"{worker},{direction},{build_direction} {HeuristicStrategy._total_score(game, game.board)}")
+
