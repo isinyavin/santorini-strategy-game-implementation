@@ -27,7 +27,13 @@ class RandomStrategy(PlayerStrategy):
         game.invoker.store_command(move_command)
         build_command = BuildCommand(game, move[0], move[2])
         game.invoker.store_command(build_command)
-        game.invoker.execute_commands()
+        if game.type == "gui":
+            game.invoker.slow_execute()
+        else:
+            game.invoker.execute_commands()
+
+
+
         if game.type == "cli":
             if not gamecli.score_output:
                 print(f"{move[0]},{move[1]},{move[2]}")
@@ -60,13 +66,19 @@ class HeuristicStrategy(PlayerStrategy):
         game.invoker.store_command(move_command)
         build_command = BuildCommand(game, move[0], move[2])
         game.invoker.store_command(build_command)
-        game.invoker.execute_commands()
 
-        if not gamecli.score_output:
-             print(f"{move[0]},{move[1]},{move[2]}")
-        if gamecli.score_output: 
-            print(f"{move[0]},{move[1]},{move[2]} {HeuristicStrategy._total_score(game, game.board)}")
-    
+        if game.type == "gui":
+            game.invoker.slow_execute()
+        else:
+            game.invoker.execute_commands()
+
+
+        if game.type == "cli":
+            if not gamecli.score_output:
+                print(f"{move[0]},{move[1]},{move[2]}")
+            if gamecli.score_output: 
+                print(f"{move[0]},{move[1]},{move[2]} {HeuristicStrategy._total_score(game, game.board)}")
+        
     def _total_score(game, board): 
         height_score = HeuristicStrategy._height_calculate(board, game)
         center_score = HeuristicStrategy._center_calculate(board, game)

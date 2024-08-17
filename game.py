@@ -1,11 +1,12 @@
 from board import SantoriniBoard
 from command import Invoker
 from worker import WorkerFactory
+import copy
 
 class Game:
-    def __init__(self, player1, player2, type):
+    def __init__(self, player1, player2, type, gui = None):
         """Initialize the game with two players, setting up the board and turn logic."""
-        self.invoker = Invoker()
+        self.invoker = Invoker(gui, self)
         self.type = type
         self.turn_amount = 1
         self.curr_player_to_move = "white"
@@ -15,6 +16,19 @@ class Game:
         self.player1 = player1
         self.player2 = player2
         self.cur_player_object = player1
+    
+    def __deepcopy__(self, memo):
+        # Create a new instance of Game without GUI-related components
+        copy_obj = Game(self.player1, self.player2, self.type, None)
+        copy_obj.board = copy.deepcopy(self.board, memo)
+        copy_obj.history = copy.deepcopy(self.history, memo)
+        copy_obj.future = copy.deepcopy(self.future, memo)
+        copy_obj.turn_amount = self.turn_amount
+        copy_obj.curr_player_to_move = self.curr_player_to_move
+        copy_obj.cur_player_object = copy.deepcopy(self.cur_player_object, memo)
+        
+        # Other non-GUI game attributes can be deep-copied here
+        return copy_obj
         
     def check_win(self):
         """Check the board state to determine if there is a winning condition."""

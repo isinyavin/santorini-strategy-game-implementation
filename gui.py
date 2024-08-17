@@ -1,10 +1,11 @@
 from game import Game
 from strategy import Player, HumanInput, RandomStrategy, HeuristicStrategy
 import tkinter as tk
-from tkinter import messagebox, font, ttk
+from tkinter import messagebox, font, ttk, PhotoImage
 from PIL import Image, ImageTk
 import sys
 from megawidgets import BoardFrame, GameInfoFrame, GameMoveUpdates, GameOverFrame
+import time
 
 
 class SantoriniGUI:
@@ -28,12 +29,12 @@ class SantoriniGUI:
         else:
             self.score_output = False
     
-        self.game = Game(player1, player2, "gui")
+        self.game = Game(player1, player2, "gui", self)
 
 
         self._window = tk.Tk()
         self._window.title("SantoriniGame")
-        self._window.geometry("600x600") 
+        self._window.geometry("540x680") 
         self._style = ttk.Style(self._window)
         self._style.theme_use('clam')
         self._window.configure(bg='#f0f0f0')
@@ -47,7 +48,7 @@ class SantoriniGUI:
         canvas = tk.Canvas(self._top_frame, width=600, height=50)
         canvas.pack()
         canvas.create_image(0, 0, image=background_photo, anchor='nw')
-        my_font = font.Font(family="Times New Roman", size=30, weight="bold")
+        my_font = font.Font(family="MS Reference Specialty", size=30, weight="bold")
         canvas.create_text(70, 25, text="Santorini", font=my_font, fill='black')
 
         self._move_retrieve_updates = GameMoveUpdates(self._window, self.game, bg='#f0f0f0')
@@ -60,46 +61,66 @@ class SantoriniGUI:
         self._game_info_frame.pack(side=tk.TOP, fill=tk.X)
 
         self._game_over_frame = GameOverFrame(self._window, self.game, type1, type2, self, bg="#f0f0f0")
+        self._in_winning_state = False
 
         if type1 != "human" and type2 != "human":
-            var = True
-            while var:
-                self._game_info_frame.update_info()
-                if self.game.check_win():
-                    self._board.create_grid()
-                    self._game_over_frame.build_frame()
-                    self._game_over_frame.show()
-                    self._game_over_frame.display_winner(self.game.check_win())
-                    var = False
-                else:
-                    self.game.cur_player_object.play_turn(self.game, self)
-                    self.game.next_turn()
+            self._play_ai_vs_ai()
+
         elif self.game.cur_player_object.type != "human": 
-            self.game.cur_player_object.play_turn(self.game, self)
-            self.game.next_turn()
-            print(self.game.cur_player_object.type)
+            self._play_ai_turn()
+
 
         self._window.mainloop()
 
-
-    def run(self):
-        """Initiates the game input loop."""
-        while True:
-            self._retrieve_all_possible_moves()
-            print("hello")
-            self._print_game_state()
-            self._winner_winner_chicken_dinner()
+    def _play_ai_vs_ai(self):
+        """Handles the game loop for AI vs AI with a delay between moves."""
+        if self.game.check_win():
+            self._end_game()
+        else:
+            self._game_info_frame.update_info()
             self.game.cur_player_object.play_turn(self.game, self)
-            self.game.next_turn()
+            self._window.after(0, self._play_next_turn)
+
+    def _play_ai_turn(self):
+        """Plays the AI turn and schedules the next turn."""
+        if self.game.check_win():
+            self._end_game()
+        self.game.cur_player_object.play_turn(self.game, self)
+        self._window.after(0, self._play_next_turn)
+
+    def _play_next_turn(self):
+        """Advances to the next turn and checks if it's AI's turn again."""
+        if self.game.check_win():
+            self._end_game()
+        self.game.next_turn()
+        if self.game.cur_player_object.type != "human":
+            self._play_ai_vs_ai()
+
+    def _end_game(self):
+        """Handles the end of the game by showing a pop-up with the winner and an option to quit."""
+        winner = self.game.check_win()
+        if winner:
+            self._disable_buttons()
+            messagebox.showinfo("Game Over", f"{winner} wins!")
+            self._window.quit()
+        
+    def _disable_buttons(self):
+        """Disables all buttons on the board."""
+        for button in self._board.buttons.values():
+            button.config(state=tk.DISABLED)
+    
+    def refresh_board(self):
+        """Refreshes the board."""
+        self._board.create_grid(True)
+
 
 
 if __name__ == "__main__":
     white_player_type = 'human'
     blue_player_type = 'human'
     undo_redo_enabled = 'off'
-    score_display_enabled = 'off'
+    score_display_enabled = 'on'
     
-
     if len(sys.argv) > 1:
         white_player_type = sys.argv[1]
     if len(sys.argv) > 2:
@@ -113,6 +134,3 @@ if __name__ == "__main__":
     score_display_bool = score_display_enabled.lower() == 'on'
 
     game_cli = SantoriniGUI(white_player_type, blue_player_type,score_display_bool)
-
-
-
