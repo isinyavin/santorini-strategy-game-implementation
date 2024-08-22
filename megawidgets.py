@@ -166,30 +166,30 @@ class BoardFrame(tk.Frame):
 
             for direction in possible_directions:
                 x, y = self.game.board.find_worker_coords(str(self.selected_worker))  
-                print(self.selected_worker)
+                #print(self.selected_worker)
                 new_x, new_y = self.game.board.find_new_coords2(y, x, direction) 
                 if 0 <= new_x < 5 and 0 <= new_y < 5:  
                     self.buttons[(new_y, new_x)].config(highlightbackground='light blue')
 
         elif self._move_retrieve_state == "select_build":
-            print("SELECT BUILD")
-            print(self.selected_worker)
+            #print("SELECT BUILD")
+            #print(self.selected_worker)
             for button in self.buttons.values():
                 button.config(highlightbackground='light grey')
             x, y = self.game.board.find_worker_coords(str(self.selected_worker))
             self.buttons[(x, y)].config(highlightbackground='dark blue')
             possible_builds = []
-            print(self.temp_copy_game.curr_player_to_move)
+            #print(self.temp_copy_game.curr_player_to_move)
             self.temp_copy_game.board.enumerate_all_available_moves(self.temp_copy_game.curr_player_to_move)
             for move in self.temp_copy_game.board.enumerate_all_available_moves(self.temp_copy_game.curr_player_to_move):
-                print(self.selected_worker)
-                print(self.selected_move)
-                print(move)
-                print(self.game.board)
-                print(self.temp_copy_game.board)
+                #print(self.selected_worker)
+                #print(self.selected_move)
+                #print(move)
+                #print(self.game.board)
+                #print(self.temp_copy_game.board)
                 if str(move[0]) == str(self.selected_worker) and str(move[1]) == str(self.selected_move):
                     possible_builds.append(move)
-            print(possible_builds)
+           # print(possible_builds)
             possible_build_directions = {move[2] for move in possible_builds}
             for direction in possible_build_directions:
                 new_x, new_y = self.temp_copy_game.board.find_new_coords(self.selected_move_coord[0], self.selected_move_coord[1], direction) 
@@ -226,11 +226,11 @@ class BoardFrame(tk.Frame):
                 x, y = self.game.board.find_worker_coords(str(self.selected_worker))  
                 new_x, new_y = self.game.board.find_new_coords(x, y, direction) 
                 possible_new_coords.append((new_x,new_y))
-            print(possible_directions)
-            print(possible_new_coords)
+            #print(possible_directions)
+            #print(possible_new_coords)
             if (i,j) in possible_new_coords:
                 index = possible_new_coords.index((i,j))
-                print(possible_directions[index])
+                #print(possible_directions[index])
                 self.selected_move = possible_directions[index]
                 self.selected_move_coord = possible_new_coords[index]
                 self._move_retrieve_state = "select_build"
@@ -258,7 +258,7 @@ class BoardFrame(tk.Frame):
             if (i,j) in possible_new_coords:
                 index = possible_new_coords.index((i,j))
                 self.selected_build = possible_directions[index]
-                print(self.selected_build)
+                #print(self.selected_build)
 
                 self.game.build(str(self.selected_worker), self.selected_build)
                 if self.game.check_win():
@@ -268,7 +268,7 @@ class BoardFrame(tk.Frame):
                     self.gui._window.quit() 
                     return 
                 self.game.next_turn()
-                print(self.game.cur_player_object.type)
+                #print(self.game.cur_player_object.type)
                 self._move_retrieve_state = "select_player"
                 if self.game.cur_player_object.type != "human": 
                     self._move_retrieve_state = "comp_build"
@@ -306,7 +306,7 @@ class GameInfoFrame(tk.Frame):
 
     def update_info(self):
         """Update the information displayed in the frame."""
-        print("UPDATING")
+        #print("UPDATING")
         self.game = self.gui.game
         self.move_label.config(text=f"Move: {self.game.turn_amount}")
         self.player_label.config(text=f"Player: {self.game.curr_player_to_move}")
