@@ -12,7 +12,7 @@ For detailed rules and instructions on how to play the game, you can refer to th
 
 This implementation includes a GUI that lets you play against three different levels of AI opponents: Random, Heuristic, and ML. The GUI can be launched using the following commands:
 
-### 1. **Play Against a Random Opponent (Beginner)**
+### 1. **Play Against a Random Opponent**
 
 Launch the game with a random AI opponent:
 ```bash
@@ -20,7 +20,7 @@ python3 gui.py human random
 ```
 In this mode, your opponent makes random moves with no strategy.
 
-### 2. Play Against a Heuristic Opponent (Intermediate)
+### 2. Play Against a Heuristic Opponent
 
 Launch the game with a heuristic AI opponent:
 
@@ -36,7 +36,7 @@ In this mode, the AI uses a heuristic strategy to optimize its moves. The heuris
 
 These factors are weighted for each available move and optimal move is played. 
 
-### 3. Play Against a Machine Learning Opponent (Advanced)
+### 3. Play Against a Machine Learning Opponent
 
 ![Santorini Gameplay](ml_demo.gif)
 
