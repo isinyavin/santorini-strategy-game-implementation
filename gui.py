@@ -1,5 +1,5 @@
 from game import Game
-from strategy import Player, HumanInput, RandomStrategy, HeuristicStrategy
+from strategy import Player, HumanInput, RandomStrategy, HeuristicStrategy, MLStrategy
 import tkinter as tk
 from tkinter import messagebox, font, ttk, PhotoImage
 from PIL import Image, ImageTk
@@ -9,28 +9,34 @@ import time
 
 
 class SantoriniGUI:
-    def __init__(self, type1, type2, rank):
+    def __init__(self, type1, type2, rank, ml_model_path=None):
         """Initializes the GameCLI"""
         human_strategy = HumanInput()
         random_strategy = RandomStrategy()
         heuristic_strategy = HeuristicStrategy()
 
+        ml_model_path = "santorini_cnn_win_predictor_varied_denser.h5"
+        ml_strategy = MLStrategy(ml_model_path)
 
-        if str(type1) == "human": player1 = Player(human_strategy, "human")
-        if str(type1) == "heuristic": player1 = Player(heuristic_strategy, "heuristic")
-        if str(type1) == "random": player1 = Player(random_strategy, "random")
-        
-        if str(type2) == "human": player2 = Player(human_strategy, "human")
-        if str(type2) == "heuristic":player2 = Player(heuristic_strategy, "heuristic")
-        if str(type2) == "random":player2 = Player(random_strategy, "random")
+        if str(type1) == "human":
+            player1 = Player(human_strategy, "human")
+        elif str(type1) == "heuristic":
+            player1 = Player(heuristic_strategy, "heuristic")
+        elif str(type1) == "random":
+            player1 = Player(random_strategy, "random")
+        elif str(type1) == "ml" and ml_model_path:
+            player1 = Player(ml_strategy, "ml")
 
-        if rank == True: 
-            self.score_output = True
-        else:
-            self.score_output = False
-    
+        if str(type2) == "human":
+            player2 = Player(human_strategy, "human")
+        elif str(type2) == "heuristic":
+            player2 = Player(heuristic_strategy, "heuristic")
+        elif str(type2) == "random":
+            player2 = Player(random_strategy, "random")
+        elif str(type2) == "ml" and ml_model_path:
+            player2 = Player(ml_strategy, "ml")
+
         self.game = Game(player1, player2, "gui", self)
-
 
         self._window = tk.Tk()
         self._window.title("SantoriniGame")

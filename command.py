@@ -53,11 +53,11 @@ class Invoker:
         self.gui._window.update() 
     
         for command in self._commands:
-            #time.sleep(0.0)
+            time.sleep(0.4)
             command.execute()
             self.gui.refresh_board()
             self.gui._window.update() 
-            #time.sleep(0.0)
+            time.sleep(0.2)
         if self.game.check_win():
             winner = self.game.check_win()
             #self._disable_buttons()  
