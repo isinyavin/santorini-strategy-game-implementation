@@ -2,13 +2,11 @@
 
 This repository contains an implementation of the board game **Santorini**. My implementation provides three different types of opponents based on difficulty.
 
-## Game Overview
-
-![Santorini Gameplay](main_demo.gif)
-
 Santorini is a strategy-based board game where players compete to be the first to build a tower and place their worker on the third level. The game is played on a 5x5 board, and each player controls two workers. On each turn, a player moves one of their workers and then builds on an adjacent square. The objective is to reach the third level of a tower before your opponent does.
 
 For detailed rules and instructions on how to play the game, you can refer to the official Santorini rules [here](https://roxley.com/santorini).
+
+![Santorini Gameplay](main_demo.gif)
 
 ## How to Play Using the GUI
 
