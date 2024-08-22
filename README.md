@@ -1,6 +1,6 @@
 # Tower Building Stategy Game 
 
-This repository contains an implementation of the board game **Santorini**. My implementation provides three different types of opponents based on difficulty.
+This repository contains an implementation of the board game Santorini. My implementation provides three different types of opponents based on difficulty.
 
 Santorini is a strategy-based board game where players compete to be the first to build a tower and place their worker on the third level. The game is played on a 5x5 board, and each player controls two workers. On each turn, a player moves one of their workers and then builds on an adjacent square. The objective is to reach the third level of a tower before your opponent does.
 
