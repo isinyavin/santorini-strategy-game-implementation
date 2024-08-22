@@ -48,7 +48,7 @@ python3 gui.py human ml
 
 In every turn, the chosen move is determined by multiplying the heuristic score by the machine learning output. This allows the heuristic score to dominate in the early stages, where basic principles like height advantage and worker positioning are key. As the game progresses and becomes more strategically complex, the model output (which will yield higher scores) takes precedence.
 
-### Explanation of the ML Model
-The ML opponent uses a convolutional neural network  that processes board states represented as a 5x5 grid with separate channels for height and worker positions. The model was trained using simulated games, where board states were labeled based on whether they led to a victory. The CNN was fine-tuned using a combination of heuristic rules and reinforcement learning techniques.
+### What's behind the ML Model.
+The ML opponent uses a convolutional neural network that processes board states represented as a 5x5 grid with separate channels for height and worker positions. The model was trained using 3.5  million simulated games and board positions with two random opponents playing against each other. By examining the last sequence of moves that led a the simulated player to win and assigning appropriate weights (larger "rewards" for moves closer to the final victory position, and high awards for the steps right before). By using a CNN approach, the model can well understand the positions that can lead to a victory and execute the proper strategies once it recognizes a pattern that may potentially lead to a victory. 
 
-The ML strategy combines heuristic evaluation with deep learning predictions. Early moves are guided by basic principles encapsulated in the heuristic score, while later moves are informed by the model, which was trained on 3.5 million simulated board states.
+In the final machine learning strategy, we combine combines heuristic evaluation with the deep learning predictions. Early moves are thus mostly based on basic principles encapsulated in the heuristic score, while later moves are informed by the model.
