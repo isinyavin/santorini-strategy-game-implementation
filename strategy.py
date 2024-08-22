@@ -264,14 +264,12 @@ class MLStrategy(PlayerStrategy):
         """Initialize the strategy with a pre-trained model."""
         self.model = load_model(model_path, compile=False)
         self.model.compile(optimizer='adam', loss='mse')
-        self.turn_counter = 0  # Track the number of turns
-
+        self.turn_counter = 0  
     def next_move(self, game, gamecli):
         """Plays the next move based on the model's prediction or heuristic strategy."""
         self.turn_counter += 1
 
-        # Use heuristic strategy for the first 10 turns (5 AI turns)
-        if self.turn_counter <= 5:
+        if self.turn_counter <= 0:
             print(f"Using heuristic strategy for turn {self.turn_counter}")
             self.heuristic_strategy(game, gamecli)
         else:
@@ -297,22 +295,46 @@ class MLStrategy(PlayerStrategy):
         best_move = possible_moves[scores.index(max(scores))]
         self.execute_move(game, best_move, gamecli)
 
+    def calculate_heuristic_score(self, game, move):
+        """Calculate a heuristic score for the given move."""
+
+        cloned_game = deepcopy(game)
+        cloned_game.move_worker(move[0], move[1])
+        cloned_game.build(move[0], move[2])
+
+        height_score = HeuristicStrategy._height_calculate(cloned_game.board, game)
+        center_score = HeuristicStrategy._center_calculate(cloned_game.board, game)
+        distance_score = HeuristicStrategy._distance_calculate(cloned_game.board, game)
+        
+
+        score = height_score * 3 + center_score * 2 + distance_score
+        
+        return score
+
     def ml_strategy(self, game, gamecli):
-        """ML-based move selection."""
+        """ML-based move selection enhanced with heuristic scoring."""
         possible_moves = game.board.enumerate_all_available_moves(game.curr_player_to_move)
         best_move = None
-        best_probability = 1
+        best_generalized_score = -float('inf')  
 
         for move in possible_moves:
             board_tensor = self.generate_board_tensor(game, move)
             
-            probability = self.model.predict(np.array([board_tensor]))[0][0]
-            print(f"Move: {move}, Q-Score: {probability}")
+            model_output = self.model.predict(np.array([board_tensor]))[0][0]
+            model_output = -model_output
+            
+            heuristic_score = self.calculate_heuristic_score(game, move)
+            if model_output < 0:
+                generalized_score = model_output / heuristic_score
+            else:
+                generalized_score = model_output * heuristic_score
+            
+            print(f"Move: {move}, Model Score: {model_output}, Heuristic Score: {heuristic_score}, Combined Score: {generalized_score}")
 
-            if probability < best_probability:
-                best_probability = probability
+            if generalized_score > best_generalized_score:
+                best_generalized_score = generalized_score
                 best_move = move
-        
+        print(best_move)
         if best_move:
             self.execute_move(game, best_move, gamecli)
 
@@ -322,19 +344,16 @@ class MLStrategy(PlayerStrategy):
         cloned_game.move_worker(move[0], move[1])
         cloned_game.build(move[0], move[2])
 
-        board_tensor = np.zeros((5, 5, 5))
+        board_tensor = np.zeros((5, 5, 2))
 
         for i, row in enumerate(cloned_game.board.squares):
             for j, square in enumerate(row):
                 board_tensor[i, j, 0] = square.level
-                if square.worker == "A":
+                worker = square.worker
+                if worker in ["A", "B"]:  
                     board_tensor[i, j, 1] = 1
-                elif square.worker == "B":
-                    board_tensor[i, j, 2] = 1
-                elif square.worker == "Y":
-                    board_tensor[i, j, 3] = 1
-                elif square.worker == "Z":
-                    board_tensor[i, j, 4] = 1
+                elif worker in ["Y", "Z"]:  
+                    board_tensor[i, j, 1] = -1 
 
         return board_tensor
 
@@ -356,82 +375,3 @@ class MLStrategy(PlayerStrategy):
             if gamecli and gamecli.score_output:
                 print(f"{move[0]},{move[1]},{move[2]} {HeuristicStrategy._total_score(game, game.board)}")
 
-
-
-class MLStrategy_Vector(PlayerStrategy):
-    def __init__(self, model_path):
-        """Initialize the strategy with a pre-trained model."""
-        self.model = load_model(model_path)
-
-    def next_move(self, game, gamecli):
-        """Plays the next move based on the model's prediction."""
-        possible_moves = game.board.enumerate_all_available_moves(game.curr_player_to_move)
-        best_move = None
-        best_probability = -1
-        
-        for move in possible_moves:
-            features = self.generate_features(game, move)
-            
-            probability = self.model.predict(np.array([features]))[0][0] 
-            print(probability)
-            
-            if probability > best_probability:
-                best_probability = probability
-                best_move = move
-        
-        if best_move:
-            self.execute_move(game, best_move, gamecli)
-
-    def generate_features(self, game, move):
-        """Generates the feature vector for a given game state and move."""
-        board_state = self.serialize_board(game.board)
-        worker = move[0]
-        move_direction = move[1]
-        build_direction = move[2]
-
-        board_features = []
-        for row in board_state:
-            for square in row:
-                board_features.append(square["level"])
-                board_features.append(self.encode_worker(square["worker"]))
-
-        move_features = [
-            self.encode_worker(worker),
-            self.encode_direction(move_direction),
-            self.encode_direction(build_direction)
-        ]
-
-        # Combine board features and move information
-        return np.array(board_features + move_features)
-
-    def serialize_board(self, board):
-        """Converts the board state to a serializable format."""
-        return [[{"level": square.level, "worker": str(square.worker)} for square in row] for row in board.squares]
-
-    def encode_worker(self, worker):
-        """Encodes the worker as a numerical feature."""
-        encoding = {"A": 0, "B": 1, "Y": 2, "Z": 3}
-        return encoding.get(worker, -1)  # -1 for empty or invalid workers
-
-    def encode_direction(self, direction):
-        """Encodes a direction as a numerical feature."""
-        encoding = {"n": 0, "ne": 1, "e": 2, "se": 3, "s": 4, "sw": 5, "w": 6, "nw": 7}
-        return encoding.get(direction, -1)  # -1 for invalid directions
-
-    def execute_move(self, game, move, gamecli):
-        """Executes a move in the game."""
-        move_command = MoveWorkerCommand(game, move[0], move[1])
-        game.invoker.store_command(move_command)
-        build_command = BuildCommand(game, move[0], move[2])
-        game.invoker.store_command(build_command)
-        
-        if game.type == "gui":
-            game.invoker.slow_execute()
-        else:
-            game.invoker.execute_commands()
-
-        if game.type == "cli":
-            if not gamecli or not gamecli.score_output:
-                print(f"{move[0]},{move[1]},{move[2]}")
-            if gamecli and gamecli.score_output:
-                print(f"{move[0]},{move[1]},{move[2]} {HeuristicStrategy._total_score(game, game.board)}")

@@ -15,7 +15,7 @@ class SantoriniGUI:
         random_strategy = RandomStrategy()
         heuristic_strategy = HeuristicStrategy()
 
-        ml_model_path = "santorini_cnn_win_predictor_varied_denser.h5"
+        ml_model_path = "santorini_cnn_denser_6.h5"
         ml_strategy = MLStrategy(ml_model_path)
 
         if str(type1) == "human":
@@ -46,7 +46,7 @@ class SantoriniGUI:
         self._window.configure(bg='#f0f0f0')
         self._top_frame = tk.Frame(self._window, bg='#f0f0f0')
         self._top_frame.pack(side=tk.TOP, fill=tk.X)
-        background_image = Image.open("santorini_background.jpg")
+        background_image = Image.open("board_pics/santorini_background.jpg")
         width, height = background_image.size
         bottom_crop = (325, 200, width, height)
         cropped_image = background_image.crop(bottom_crop)

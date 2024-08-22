@@ -23,67 +23,67 @@ class BoardFrame(tk.Frame):
         m=5
         n=5
 
-        self.image_0_temp = PhotoImage(file = '0.png')
+        self.image_0_temp = PhotoImage(file = 'board_pics/0.png')
         self.image_0 = self.image_0_temp.subsample(m,n)
 
-        self.image_0A_temp = PhotoImage(file = '0A.png')
+        self.image_0A_temp = PhotoImage(file = 'board_pics/0A.png')
         self.image_0A = self.image_0A_temp.subsample(m,n)
 
-        self.image_0B_temp = PhotoImage(file = '0B.png')
+        self.image_0B_temp = PhotoImage(file = 'board_pics/0B.png')
         self.image_0B = self.image_0B_temp.subsample(m,n)
 
-        self.image_0Y_temp = PhotoImage(file = '0Y.png')
+        self.image_0Y_temp = PhotoImage(file = 'board_pics/0Y.png')
         self.image_0Y = self.image_0Y_temp.subsample(m,n)
 
-        self.image_0Z_temp = PhotoImage(file = '0Z.png')
+        self.image_0Z_temp = PhotoImage(file = 'board_pics/0Z.png')
         self.image_0Z = self.image_0Z_temp.subsample(m,n)
 
-        self.image_1_temp = PhotoImage(file = '1.png')
+        self.image_1_temp = PhotoImage(file = 'board_pics/1.png')
         self.image_1 = self.image_1_temp.subsample(m,n)
 
-        self.image_1A_temp = PhotoImage(file = '1A.png')
+        self.image_1A_temp = PhotoImage(file = 'board_pics/1A.png')
         self.image_1A = self.image_1A_temp.subsample(m,n)
 
-        self.image_1B_temp = PhotoImage(file = '1B.png')
+        self.image_1B_temp = PhotoImage(file = 'board_pics/1B.png')
         self.image_1B = self.image_1B_temp.subsample(m,n)
 
-        self.image_1Y_temp = PhotoImage(file = '1Y.png')
+        self.image_1Y_temp = PhotoImage(file = 'board_pics/1Y.png')
         self.image_1Y = self.image_1Y_temp.subsample(m,n)
 
-        self.image_1Z_temp = PhotoImage(file = '1Z.png')
+        self.image_1Z_temp = PhotoImage(file = 'board_pics/1Z.png')
         self.image_1Z = self.image_1Z_temp.subsample(m,n)
 
-        self.image_2_temp = PhotoImage(file = '2.png')
+        self.image_2_temp = PhotoImage(file = 'board_pics/2.png')
         self.image_2 = self.image_2_temp.subsample(m,n)
 
-        self.image_2A_temp = PhotoImage(file = '2A.png')
+        self.image_2A_temp = PhotoImage(file = 'board_pics/2A.png')
         self.image_2A = self.image_2A_temp.subsample(m,n)
 
-        self.image_2B_temp = PhotoImage(file = '2B.png')
+        self.image_2B_temp = PhotoImage(file = 'board_pics/2B.png')
         self.image_2B = self.image_2B_temp.subsample(m,n)
 
-        self.image_2Y_temp = PhotoImage(file = '2Y.png')
+        self.image_2Y_temp = PhotoImage(file = 'board_pics/2Y.png')
         self.image_2Y = self.image_2Y_temp.subsample(m,n)
 
-        self.image_2Z_temp = PhotoImage(file = '2Z.png')
+        self.image_2Z_temp = PhotoImage(file = 'board_pics/2Z.png')
         self.image_2Z = self.image_2Z_temp.subsample(m,n)
 
-        self.image_3_temp = PhotoImage(file = '3.png')
+        self.image_3_temp = PhotoImage(file = 'board_pics/3.png')
         self.image_3 = self.image_3_temp.subsample(m,n)
 
-        self.image_3A_temp = PhotoImage(file = '3A.png')
+        self.image_3A_temp = PhotoImage(file = 'board_pics/3A.png')
         self.image_3A = self.image_3A_temp.subsample(m,n)
 
-        self.image_3B_temp = PhotoImage(file = '3B.png')
+        self.image_3B_temp = PhotoImage(file = 'board_pics/3B.png')
         self.image_3B = self.image_3B_temp.subsample(m,n)
 
-        self.image_3Y_temp = PhotoImage(file = '3Y.png')
+        self.image_3Y_temp = PhotoImage(file = 'board_pics/3Y.png')
         self.image_3Y = self.image_3Y_temp.subsample(m,n)
 
-        self.image_3Z_temp = PhotoImage(file = '3Z.png')
+        self.image_3Z_temp = PhotoImage(file = 'board_pics/3Z.png')
         self.image_3Z = self.image_3Z_temp.subsample(m,n)
 
-        self.image_4_temp = PhotoImage(file = '4.png')
+        self.image_4_temp = PhotoImage(file = 'board_pics/4.png')
         self.image_4 = self.image_4_temp.subsample(m,n)
 
         self.repr_to_img = {'0 ': self.image_0, '0A': self.image_0A, '0B': self.image_0B, '0Y': self.image_0Y, '0Z': self.image_0Z, 
@@ -268,6 +268,10 @@ class BoardFrame(tk.Frame):
                     self.gui._window.quit() 
                     return 
                 self.game.next_turn()
+                self.gui.refresh_board()
+                self.gui._board.update_button_highlights()
+                self.gui._board.clear_highlights() 
+                self.gui._window.update() 
                 #print(self.game.cur_player_object.type)
                 self._move_retrieve_state = "select_player"
                 if self.game.cur_player_object.type != "human": 

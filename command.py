@@ -41,6 +41,8 @@ class Invoker:
 
     def execute_commands(self):
         """Executes all stored commands and clears the command list afterward."""
+        self.gui.refresh_board()
+        self.gui._board.update_button_highlights()
         for command in self._commands:
             command.execute()
         self._commands.clear()
