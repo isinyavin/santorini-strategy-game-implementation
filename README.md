@@ -42,7 +42,7 @@ These factors are weighted for each available move and optimal move is played.
 
 ![Santorini Gameplay](ml_demo.gif)
 
-Launch the game with a machine learning (ML) opponent:
+Launch the game with a machine learning opponent:
 
 ```bash
 python3 gui.py human ml
@@ -51,6 +51,6 @@ python3 gui.py human ml
 In every turn, the chosen move is determined by multiplying the heuristic score by the machine learning output. This allows the heuristic score to dominate in the early stages, where basic principles like height advantage and worker positioning are key. As the game progresses and becomes more strategically complex, the model output (which will yield higher scores) takes precedence.
 
 ### Explanation of the ML Model
-The ML opponent uses a convolutional neural network (CNN) that processes board states represented as a 5x5 grid with separate channels for height and worker positions. The model was trained using simulated games, where board states were labeled based on whether they led to a victory. The CNN was fine-tuned using a combination of heuristic rules and reinforcement learning techniques.
+The ML opponent uses a convolutional neural network  that processes board states represented as a 5x5 grid with separate channels for height and worker positions. The model was trained using simulated games, where board states were labeled based on whether they led to a victory. The CNN was fine-tuned using a combination of heuristic rules and reinforcement learning techniques.
 
 The ML strategy combines heuristic evaluation with deep learning predictions. Early moves are guided by basic principles encapsulated in the heuristic score, while later moves are informed by the model, which was trained on 3.5 million simulated board states.
